@@ -19,15 +19,43 @@ const SignupForm = ({setisLogin}) => {
   
     const handleSubmit = (e) => {
       e.preventDefault();
-      if(formData.password != formData.confirmpassword){
-        toast.error("Password do not match" ,{position: "top-center" , autoClose: 2000 , theme: "dark"});
-        return ;
+    
+      // Check if passwords match
+      if (formData.password !== formData.confirmpassword) {
+        toast.error("Passwords do not match", {
+          position: "top-center",
+          autoClose: 2000,
+          theme: "dark"
+        });
+        return;
       }
+    
+      // Set login state
       setisLogin(true);
       console.log("Employee Data:", formData);
-      toast.success("Account created" ,{position: "top-center" , autoClose: 2000 , theme: "dark"});
-      navigate("/home");
+      
+      toast.success("Account created", {
+        position: "top-center",
+        autoClose: 2000,
+        theme: "dark"
+      });
+    
+      // Navigate based on selected role
+      switch (formData.role) {
+        case "admin":
+          navigate("/admin");
+          break;
+        case "manager":
+          navigate("/manager");
+          break;
+        case "employee":
+          navigate("/employee");
+          break;
+        default:
+          navigate("/home"); // Default route
+      }
     };
+    
   
     return (
       <div className="flex justify-center">
@@ -82,9 +110,9 @@ const SignupForm = ({setisLogin}) => {
                 onChange={handleChange}
                 >
                      <option value="" disabled>Select Your Role</option>
-                     <option value="Admin">Admin</option>
-                     <option value="Manager">Manager</option>
-                     <option value="Employee">Employee</option>
+                     <option value="admin">Admin</option>
+                     <option value="manager">Manager</option>
+                     <option value="employee">Employee</option>
                 </select>
           </div>
         </div>
