@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; 
 import Navebar from './components/Navebar';
 import LoginSignupPage from './pages/LoginSignupPage';
-import  Home  from './pages/Home';
 import Privateroute from './components/Privateroute';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashbord from './pages/EmployeeDashbord';
@@ -19,13 +18,6 @@ const App = () => {
       
       <Routes>
         <Route path='/' element={<LoginSignupPage setisLogin={setisLogin}/>} />
-        
-        <Route path='/home' element={
-           <Privateroute isLogin={isLogin}>
-            <Navebar />
-           <Home/>
-          </Privateroute>
-        }/>
         <Route path='/admin' element={
            <Privateroute isLogin={isLogin}>
             <Navebar />
