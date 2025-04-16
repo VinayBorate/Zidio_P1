@@ -26,13 +26,14 @@ public class ExpenseService {
 		ResponseStructure<Expense> structure = new ResponseStructure<Expense>();
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String employeeName = authentication.getName();
-		Expense expense=new Expense();
+		Expense expense = new Expense();
 		expense.setDescription(expenseRequestDTO.getDescription());
-        expense.setAmount(expenseRequestDTO.getAmount());
-        expense.setCategory(expenseRequestDTO.getCategory());
+		expense.setAmount(expenseRequestDTO.getAmount());
+		expense.setCategory(expenseRequestDTO.getCategory());
 		expense.setSubmittedBy(employeeName);
 		expense.setDate(LocalDate.now());
 		expense.setStatus("PENDING");
+		expense.setApprovedBy("-");
 		structure.setMessage("Expense submitted successfully");
 		structure.setStatus(HttpStatus.CREATED.value());
 		structure.setData(expenseDao.submitExpense(expense));
@@ -75,7 +76,10 @@ public class ExpenseService {
 		Expense expense = expenseDao.findExpenseById(id);
 		ResponseStructure<Expense> structure = new ResponseStructure<Expense>();
 		if (expense != null) {
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			String managerName = authentication.getName();
 			expense.setStatus("REJECTED");
+			expense.setApprovedBy(managerName);
 			structure.setMessage("Expense Rejected");
 			structure.setStatus(HttpStatus.OK.value());
 			structure.setData(expenseDao.submitExpense(expense));
@@ -117,6 +121,19 @@ public class ExpenseService {
 			return new ResponseEntity<ResponseStructure<List<Expense>>>(structure, HttpStatus.OK);
 		} else {
 			throw new DataNotFoundException("Expenses not found");
+		}
+	}
+
+	public ResponseEntity<ResponseStructure<List<Expense>>> getExpensesBySubmittedBy(String submittedBy) {
+		List<Expense> expenses = expenseDao.findBySubmittedBy(submittedBy);
+		ResponseStructure<List<Expense>> structure = new ResponseStructure<>();
+		if (!expenses.isEmpty()) {
+			structure.setStatus(HttpStatus.OK.value());
+			structure.setMessage("Expenses fetched successfully");
+			structure.setData(expenses);
+			return new ResponseEntity<ResponseStructure<List<Expense>>>(structure, HttpStatus.OK);
+		} else {
+            throw new DataNotFoundException("Expenses not found");
 		}
 	}
 }

@@ -88,4 +88,12 @@ public class ExpenseController {
 
 	}
 
+	@Operation(summary = "Get Employee's Own Expenses", description = "Allows an employee to view their submitted expenses.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Expenses retrieved successfully") })
+	@PreAuthorize("hasAuthority('EMPLOYEE')")
+	@GetMapping("/employee/{submittedBy}")
+	public ResponseEntity<ResponseStructure<List<Expense>>> getExpensesBySubmittedBy(@PathVariable String submittedBy) {
+		return expenseService.getExpensesBySubmittedBy(submittedBy);
+	}
+
 }

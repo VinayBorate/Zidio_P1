@@ -11,4 +11,7 @@ public interface ExpenseRepo extends JpaRepository<Expense, Integer> {
 
 	@Query("SELECT e FROM Expense e WHERE e.amount>=?1")
 	List<Expense> findByAmountGreaterThan(double amount);
+
+	List<Expense> findBySubmittedBy(String submittedBy); 
+
 }

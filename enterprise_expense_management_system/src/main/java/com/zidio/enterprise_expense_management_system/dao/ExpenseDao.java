@@ -44,4 +44,10 @@ public class ExpenseDao {
 		return expenseRepo.findByAmountGreaterThan(100000);
 	}
 
+	public List<Expense> findBySubmittedBy(String submittedBy) {
+		return expenseRepo.findBySubmittedBy(submittedBy);
+	}
+
+	
+
 }
