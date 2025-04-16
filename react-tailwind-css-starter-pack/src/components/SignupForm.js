@@ -1,38 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import apiService from '../api/apiService';
 
 const SignupForm = ({ role, onSignupSuccess }) => {
   const [formData, setFormData] = useState({
-    [`${role}FullName`]: '',
-    [`${role}Email`]: '',
-    [`${role}Password`]: '',
+    fullName: '',
+    email: '',
+    password: '',
   });
 
+  
+  useEffect(() => {
+    setFormData({
+      fullName: '',
+      email: '',
+      password: '',
+    });
+  }, [role]);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
 
+    const payload = {
+      [`${role}FullName`]: formData.fullName,
+      [`${role}Email`]: formData.email,
+      [`${role}Password`]: formData.password,
+    };
+
     try {
       if (role === 'admin') {
-        await apiService.adminSignup(formData);
+        await apiService.adminSignup(payload);
       } else if (role === 'manager') {
-        await apiService.managerSignup(formData);
+        await apiService.managerSignup(payload);
       } else {
-        await apiService.employeeSignup(formData);
+        await apiService.employeeSignup(payload);
       }
 
       alert(`${role.charAt(0).toUpperCase() + role.slice(1)} Signup successful`);
 
-      
       if (onSignupSuccess) {
         onSignupSuccess();
       }
     } catch (err) {
-      alert('Signup failed');
-      console.error(err);
+      alert('email already present');
     }
   };
 
@@ -42,9 +59,9 @@ const SignupForm = ({ role, onSignupSuccess }) => {
         <label className="text-white block">Full Name:</label>
         <input
           type="text"
-          name={`${role}FullName`}
+          name="fullName"
           className="w-full p-2 rounded"
-          value={formData[`${role}FullName`]}
+          value={formData.fullName}
           onChange={handleChange}
           required
         />
@@ -53,9 +70,9 @@ const SignupForm = ({ role, onSignupSuccess }) => {
         <label className="text-white block">Email:</label>
         <input
           type="email"
-          name={`${role}Email`}
+          name="email"
           className="w-full p-2 rounded"
-          value={formData[`${role}Email`]}
+          value={formData.email}
           onChange={handleChange}
           required
         />
@@ -64,9 +81,9 @@ const SignupForm = ({ role, onSignupSuccess }) => {
         <label className="text-white block">Password:</label>
         <input
           type="password"
-          name={`${role}Password`}
+          name="password"
           className="w-full p-2 rounded"
-          value={formData[`${role}Password`]}
+          value={formData.password}
           onChange={handleChange}
           required
         />

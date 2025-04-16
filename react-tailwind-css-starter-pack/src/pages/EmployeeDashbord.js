@@ -1,64 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import apiService from '../api/apiService';
 
-function EmployeeDashboard({ employeeId }) {
-  const navigate = useNavigate(); //
+function EmployeeDashboard() {
+  const navigate = useNavigate();
+  const storedEmail = localStorage.getItem('employeeId'); 
 
   const [formData, setFormData] = useState({
-    employeeId: employeeId || '',
+    submittedBy: storedEmail || '',
     amount: '',
     description: '',
     category: '',
   });
+
   const [expenses, setExpenses] = useState([]);
 
   const handleLogout = () => {
     localStorage.removeItem('jwtToken');
-    navigate('/'); 
+    localStorage.removeItem('employeeId');
+    navigate('/');
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+
+  const fetchExpenses = useCallback(async () => {
+    try {
+      const res = await apiService.getAllExpenses();
+      const userExpenses = res.data.data.filter(
+        (exp) => exp.submittedBy === storedEmail
+      );
+      setExpenses(userExpenses);
+    } catch (err) {
+      console.error('Error fetching expenses:', err);
+    }
+  }, [storedEmail]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await apiService.submitExpense(formData);
       alert('Expense submitted');
-
-      const res = await apiService.getAllExpenses();
-      const userExpenses = res.data.data.filter(
-        (exp) => exp.employeeId === formData.employeeId
-      );
-      setExpenses(userExpenses);
+      setFormData({
+        submittedBy: storedEmail,
+        amount: '',
+        description: '',
+        category: '',
+      });
+      fetchExpenses(); 
     } catch (err) {
-      alert('Failed to submit');
-      console.error(err);
+      console.error('Error submitting expense:', err);
+      alert('Failed to submit expense');
     }
   };
 
   useEffect(() => {
-    const fetchExpenses = async () => {
-      try {
-        const res = await apiService.getAllExpenses();
-        const userExpenses = res.data.data.filter(
-          (exp) => exp.employeeId === formData.employeeId
-        );
-        setExpenses(userExpenses);
-      } catch (err) {
-        alert('Error loading expenses');
-        console.error(err);
-      }
-    };
-
-    fetchExpenses();
-  }, [formData.employeeId]);
+    if (storedEmail) {
+      fetchExpenses();
+    } else {
+      console.warn('No employee email found in localStorage');
+    }
+  }, [storedEmail, fetchExpenses]); 
 
   return (
     <div className="p-6">
-      {/*  Logout Button */}
       <div className="flex justify-end mb-4">
         <button
           onClick={handleLogout}
@@ -76,9 +83,9 @@ function EmployeeDashboard({ employeeId }) {
           <input
             type="number"
             name="amount"
-            className="border p-2 w-full"
             value={formData.amount}
             onChange={handleChange}
+            className="border p-2 w-full"
             required
           />
         </div>
@@ -88,9 +95,9 @@ function EmployeeDashboard({ employeeId }) {
           <input
             type="text"
             name="description"
-            className="border p-2 w-full"
             value={formData.description}
             onChange={handleChange}
+            className="border p-2 w-full"
             required
           />
         </div>
@@ -100,16 +107,16 @@ function EmployeeDashboard({ employeeId }) {
           <input
             type="text"
             name="category"
-            className="border p-2 w-full"
             value={formData.category}
             onChange={handleChange}
+            className="border p-2 w-full"
             required
           />
         </div>
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 mt-4"
+          className="bg-blue-600 text-white px-4 py-2 mt-2"
         >
           Submit Expense
         </button>
@@ -124,16 +131,20 @@ function EmployeeDashboard({ employeeId }) {
             <th className="border p-2">Description</th>
             <th className="border p-2">Category</th>
             <th className="border p-2">Status</th>
+            <th className="border p-2">Date</th>
+            <th className="border p-2">ApprovedBy / RejectedBy </th>
           </tr>
         </thead>
         <tbody>
           {expenses.map((exp) => (
             <tr key={exp.id}>
-              <td className="border p-2">{exp.id}</td>
-              <td className="border p-2">₹{exp.amount}</td>
-              <td className="border p-2">{exp.description}</td>
-              <td className="border p-2">{exp.category}</td>
-              <td className="border p-2">{exp.status}</td>
+              <td className="border p-2" align='center'>{exp.id}</td>
+              <td className="border p-2" align='center'>₹{exp.amount}</td>
+              <td className="border p-2" align='center'>{exp.description}</td>
+              <td className="border p-2" align='center'>{exp.category}</td>
+              <td className="border p-2" align='center'>{exp.status}</td>
+              <td className="border p-2" align='center'>{exp.date}</td>
+              <td className="border p-2" align='center'>{exp.approvedBy}</td>
             </tr>
           ))}
         </tbody>

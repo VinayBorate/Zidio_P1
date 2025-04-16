@@ -1,41 +1,38 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // ⬅️ Import navigate
+import { useNavigate } from 'react-router-dom';
 import apiService from '../api/apiService';
 
 const LoginForm = ({ role, setisLogin }) => {
-  const navigate = useNavigate(); // ⬅️ Initialize navigate
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    [`${role}Email`]: '',
-    [`${role}Password`]: '',
+    adminEmail: '',
+    adminPassword: '',
+    managerEmail: '',
+    managerPassword: '',
+    employeeEmail: '',
+    employeePassword: '',
   });
+
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrorMessage(''); 
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    const emailField = `${role}Email`;
+    const passwordField = `${role}Password`;
+
+    const payload = {
+      [emailField]: formData[emailField],
+      [passwordField]: formData[passwordField],
+    };
+
     try {
-      let payload;
-
-      if (role === 'admin') {
-        payload = {
-          adminEmail: formData.adminEmail,
-          adminPassword: formData.adminPassword,
-        };
-      } else if (role === 'manager') {
-        payload = {
-          managerEmail: formData.managerEmail,
-          managerPassword: formData.managerPassword,
-        };
-      } else {
-        payload = {
-          employeeEmail: formData.employeeEmail,
-          employeePassword: formData.employeePassword,
-        };
-      }
-
       let res;
 
       if (role === 'admin') {
@@ -49,28 +46,42 @@ const LoginForm = ({ role, setisLogin }) => {
       const token = res.data.token;
       localStorage.setItem('jwtToken', token);
 
-      alert(`${role.charAt(0).toUpperCase() + role.slice(1)} Login successful`);
+      if (role === 'employee') {
+        localStorage.setItem('employeeId', payload.employeeEmail); 
+      }
+
+      alert(`${role.charAt(0).toUpperCase() + role.slice(1)} login successful`);
       setisLogin(true);
-      console.log('Token:', token);
-
-      // ⬇️ Navigate to the correct dashboard
       navigate(`/${role}`);
-
     } catch (err) {
-      alert('Login failed: ' + (err.response?.data?.message || 'Unknown error'));
-      console.error(err);
+      const message = err.response?.data?.message?.toLowerCase() || 'unknown error';
+
+      if (message.includes('email')) {
+        setErrorMessage('Incorrect email.');
+      } else if (message.includes('password')) {
+        setErrorMessage('Incorrect password.');
+      } else {
+        setErrorMessage('Login failed. Please check your credentials.');
+      }
+
     }
   };
 
+  const emailField = `${role}Email`;
+  const passwordField = `${role}Password`;
+
   return (
     <form onSubmit={handleLogin} className="mt-6 space-y-4">
+      {errorMessage && (
+        <div className="text-red-500 bg-red-100 px-4 py-2 rounded">{errorMessage}</div>
+      )}
       <div>
         <label className="text-white block">Email:</label>
         <input
           type="email"
-          name={`${role}Email`}
+          name={emailField}
           className="w-full p-2 rounded"
-          value={formData[`${role}Email`]}
+          value={formData[emailField]}
           onChange={handleChange}
           required
         />
@@ -79,9 +90,9 @@ const LoginForm = ({ role, setisLogin }) => {
         <label className="text-white block">Password:</label>
         <input
           type="password"
-          name={`${role}Password`}
+          name={passwordField}
           className="w-full p-2 rounded"
-          value={formData[`${role}Password`]}
+          value={formData[passwordField]}
           onChange={handleChange}
           required
         />

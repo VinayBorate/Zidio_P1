@@ -6,6 +6,7 @@ import Privateroute from './components/Privateroute';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashbord from './pages/EmployeeDashbord';
 import ManagerDashboard from './pages/ManagerDashboard';
+import DisableBackButton from './components/DisableBackButton';
 
 
 const App = () => {
@@ -15,7 +16,7 @@ const App = () => {
    
     
       <Router>
-      
+      <DisableBackButton/>
       <Routes>
         <Route path='/' element={<LoginSignupPage setisLogin={setisLogin}/>} />
         <Route path='/admin' element={
